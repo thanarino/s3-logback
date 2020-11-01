@@ -1,0 +1,45 @@
+<configuration>
+    <property resource="logback.properties" />
+
+    <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${HOME_LOG}</file>
+        <!--
+          Policy to upload a log file into S3 on log rolling or JVM exit.
+          * On each log rolling, a rolled log file is created locally and uploaded to S3
+          * When <rollingOnExit> is true, log rolling occurs on JVM exit and a rolled log is uploaded (default)
+          * When <rollingOnExit> is false, the active log file is uploaded as it is
+        -->
+        <rollingPolicy class="S3TimeBasedRollingPolicy">
+            <fileNamePattern>${FILE_NAME_PATTERN}</fileNamePattern>
+            <periodMinutes>${PERIOD_MINUTES}</periodMinutes>
+            <awsAccessKey>${AWS_ACCESS_KEY}</awsAccessKey>
+            <awsSecretKey>${AWS_SECRET_KEY}</awsSecretKey>
+            <s3BucketName>${S3_BUCKET_NAME}</s3BucketName>
+            <s3FolderName>${S3_FOLDER_NAME}</s3FolderName>
+            <rollingOnExit>true</rollingOnExit>
+        </rollingPolicy>
+
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+                <appendLineSeparator>true</appendLineSeparator>
+                <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter" />
+            </layout>
+        </encoder>
+    </appender>
+
+    <logger name="com.example" level="all" additivity="false">
+        <appender-ref ref="FILE-ROLLING"/>
+    </logger>
+
+    <root level="all">
+        <appender-ref ref="FILE-ROLLING"/>
+    </root>
+
+    <!-- overriding the default log level per class / package -->
+    <!-- <logger name="com.example" level="INFO" /> -->
+
+<!--    <root level="INFO">-->
+<!--        <appender-ref ref="STDOUT" />-->
+<!--    </root>-->
+</configuration>
+
